@@ -1,174 +1,224 @@
-<!-- 
-  Указываем, что этот шаблон наследует base.html.
-  Всё содержимое будет вставлено в соответствующие блоки базового шаблона.
--->
+<!-- ============================================== -->
+<!-- ШАБЛОН ТАБЛИЦЫ С ФИЛЬТРАМИ (Vue + Vuetify) -->
+<!-- Наследует базовый шаблон base.html -->
+<!-- ============================================== -->
 {% extends "base.html" %}
 
-<!-- Переопределяем блок title -->
+<!-- 
+  Заголовок страницы
+  Будет вставлен в блок title базового шаблона
+-->
 {% block title %}Vue-Таблица{% endblock %}
 
-<!-- Блок для подключения специфичных стилей и библиотек -->
+<!-- 
+  Блок подключения стилей и скриптов 
+  Все содержимое будет вставлено в head базового шаблона
+-->
 {% block styles %}
-  <!-- 
-    Подключаем Vue.js и Vuetify только для этой страницы, 
-    чтобы не нагружать другие страницы лишними ресурсами.
-  -->
+  <!-- Подключение Vue.js 2.x -->
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  
+  <!-- Подключение библиотеки Vuetify -->
   <script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.10/dist/vuetify.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.6.10/dist/vuetify.min.css" rel="stylesheet">
   
-  <!-- Шрифты и иконки для Vuetify -->
+  <!-- Подключение шрифта Roboto (обязателен для Vuetify) -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  
+  <!-- Подключение иконок Material Design -->
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
 {% endblock %}
 
-<!-- Основное содержимое страницы -->
+<!-- 
+  Основное содержимое страницы 
+  Будет вставлено в блок content базового шаблона
+-->
 {% block content %}
-  <!-- 
-    Контейнер для Vue-приложения.
-    - id="app" обязателен для привязки Vue.
-    - v-app обязателен для работы Vuetify.
-  -->
-  <div id="app">
-    <v-app>
-      <!-- Контейнер Vuetify для отступов -->
-      <v-container>
-        <h1 class="text-h4 mb-4">Таблица пользователей</h1>
-        
- <!-- 
-          Поле поиска/фильтрации ПО ВСЕЙ ТАБЛИЦЕ:
-          - v-model="search" - двухсторонняя привязка к переменной search
-          - label - текст подсказки в поле ввода
-          - append-icon="mdi-magnify" - иконка лупы справа
-          - clearable - добавляет кнопку очистки поля
-          - class="mb-4" - отступ снизу для визуального разделения
-        -->
-        <!-- <v-text-field
-          v-model="search"
-          label="Поиск по таблице"
-          append-icon="mdi-magnify"
-          clearable
-          class="mb-4"
-        ></v-text-field> -->
-
-              <!-- Фильтры по столбцам -->
+<!-- Корневой элемент Vue-приложения -->
+<div id="app">
+  <!-- Обязательный компонент Vuetify (инициализирует стили) -->
+  <v-app>
+    <!-- Контейнер с отступами по краям -->
+    <v-container>
+      <!-- Заголовок страницы -->
+      <!-- text-h4 - стиль заголовка, mb-4 - отступ снизу 16px -->
+      <h1 class="text-h4 mb-4">Таблица пользователей</h1>
+      
+      <!-- 
+        Секция фильтров таблицы
+        v-row - компонент строки сетки Vuetify
+        mb-4 - отступ снизу 16px
+      -->
       <v-row class="mb-4">
+        <!-- Колонка фильтра по имени -->
+        <!-- cols="12" sm="4" - адаптивная ширина колонки -->
         <v-col cols="12" sm="4">
+          <!-- 
+            Поле ввода для фильтрации по имени
+            v-model - двухсторонняя привязка к filters.name
+            clearable - добавляет кнопку очистки
+            @click:clear - обработчики для кнопки очистки
+          -->
           <v-text-field
             v-model="filters.name"
             label="Фильтр по имени"
             clearable
             @input="applyFilters"
+            @click:clear="resetFilter('name')"
           ></v-text-field>
         </v-col>
+
+        <!-- Колонка фильтра по email -->
         <v-col cols="12" sm="4">
           <v-text-field
             v-model="filters.email"
             label="Фильтр по email"
             clearable
             @input="applyFilters"
+            @click:clear="resetFilter('email')"
           ></v-text-field>
         </v-col>
+
+        <!-- Колонка фильтра по роли -->
         <v-col cols="12" sm="4">
+          <!-- 
+            Выпадающий список для фильтрации по роли
+            :items - привязка к массиву вариантов roleOptions
+            @change - обработчик изменения значения
+          -->
           <v-select
             v-model="filters.role"
             :items="roleOptions"
             label="Фильтр по роли"
             clearable
             @change="applyFilters"
+            @click:clear="resetFilter('role')"
           ></v-select>
         </v-col>
       </v-row>
 
-        <!-- 
-          Таблица данных с фильтрацией и сортировкой:
-          - :headers="headers" - привязка конфигурации заголовков
-          - :items="users" - привязка данных
-          - :items-per-page="5" - пагинация по 5 элементов
-          - :search="search" - включение фильтрации по значению из search
-          - class="elevation-1" - стиль тени для таблицы, может меняться от 1 до 24
-          
-          Сортировка работает автоматически при клике на заголовки колонок,
-          так как включена по умолчанию в v-data-table. 
-          Для общей сортировки ПО ВСЕЙ ТАБЛИЦЕ нужно ДОБАВИТЬ опцию:search="search"
-        -->
-        <v-data-table
-          :headers="headers"
-          :items="users"
-          :items-per-page="5"
-          class="elevation-1"
-        ></v-data-table>
-      </v-container>
-    </v-app>
-  </div>
+      <!-- 
+        Таблица данных Vuetify
+        :headers - конфигурация колонок
+        :items - данные для отображения
+        :items-per-page - пагинация (10 строк на странице)
+      -->
+      <v-data-table
+        :headers="headers"
+        :items="filteredUsers"
+        :items-per-page="10"
+        class="elevation-1" 
+      >
+        <!-- Кастомный слот для отображения тела таблицы -->
+        <template v-slot:body="{ items }">
+          <tbody>
+            {% raw %} <!-- Экранирование скобок {} для Jinja2 -->
+            <!-- Цикл по элементам таблицы -->
+            <tr v-for="item in items" :key="item.id">
+              <td>{{ item.id }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.email }}</td>
+              <td>{{ item.role }}</td>
+            </tr>
+            {% endraw %}
+          </tbody>
+        </template>
+      </v-data-table>
+
+      <!-- Упрощенная таблица БЕЗ кастомного слота, тоже работает 
+      <v-data-table
+        :headers="headers"
+        :items="filteredUsers"
+        :items-per-page="10"
+        class="elevation-1"
+      ></v-data-table> -->
+
+    </v-container>
+  </v-app>
+</div>
 {% endblock %}
 
-<!-- Блок для скриптов -->
+<!-- 
+  Блок JavaScript-кода 
+  Будет вставлен перед закрывающим тегом body в базовом шаблоне
+-->
 {% block scripts %}
-  <script>
-    // Инициализация Vue-приложения
-    new Vue({
-      el: '#app', // Привязка к DOM-элементу
-      vuetify: new Vuetify(), // Активация Vuetify
-      data: () => ({
-        // Переменная для хранения значения поискового запроса
-        // Инициализируется пустой строкой
-        //search: '', Опция используется для фильтрации ПО ВСЕЙ ТАБЛИЦЕ одним полем, необходим удалить идущие ниже фильтры
-        // Фильтры
-        filters: {
-      name: '',
-      email: '',
-      role: null
+<script>
+// Инициализация Vue-приложения
+new Vue({
+  // Привязка к элементу с id="app"
+  el: '#app',
+  
+  // Подключение Vuetify
+  vuetify: new Vuetify(),
+
+  // Данные приложения
+  data: () => ({
+    // Объект для хранения значений фильтров
+    filters: {
+      name: '',     // Значение фильтра по имени
+      email: '',    // Значение фильтра по email
+      role: null    // Выбранная роль (null - не выбрано)
     },
-        // Заголовки таблицы
-          // Список возможных значений для фильтрации по роли
-  // следующая строчка используется в v-select для выбора роли для фильтрации по полям
-  roleOptions: ['Админ', 'Модератор', 'Пользователь', 'Гость'],
-        headers: [
-          { text: 'ID', value: 'id' }, // text - отображаемый текст, value - ключ данных
-          { text: 'Имя', value: 'name' },
-          { text: 'Email', value: 'email' },
-          { text: 'Роль', value: 'role' },
-        ],
-        // Данные для таблицы
-        users: [
-          { id: 1, name: 'Иван Петров', email: 'ivan@example.com', role: 'Админ' },
-          { id: 2, name: 'Алексей Сидоров', email: 'alex@example.com', role: 'Пользователь' },
-          { id: 3, name: 'Мария Иванова', email: 'maria@example.com', role: 'Модератор' },
-          { id: 4, name: 'Елена Смирнова', email: 'elena@example.com', role: 'Пользователь' },
-          { id: 5, name: 'Дмитрий Кузнецов', email: 'dmitry@example.com', role: 'Гость' },
-          { id: 6, name: 'Иван Петров', email: 'ivan@example.com', role: 'Админ' },
-          { id: 7, name: 'Алексей Сидоров', email: 'alex@example.com', role: 'Пользователь' },
-          { id: 8, name: 'Мария Иванова', email: 'maria@example.com', role: 'Модератор' },
-          { id: 9, name: 'Елена Смирнова', email: 'elena@example.com', role: 'Пользователь' },
-          { id: 10, name: 'Дмитрий Кузнецов', email: 'dmitry@example.com', role: 'Гость' },
-          { id: 11, name: 'Иван Петров', email: 'ivan@example.com', role: 'Админ' },
-          { id: 12, name: 'Алексей Сидоров', email: 'alex@example.com', role: 'Пользователь' },
-          { id: 13, name: 'Мария Иванова', email: 'maria@example.com', role: 'Модератор' },
-          { id: 14, name: 'Елена Смирнова', email: 'elena@example.com', role: 'Пользователь' },
-          { id: 15, name: 'Дмитрий Кузнецов', email: 'dmitry@example.com', role: 'Гость' },
-          { id: 16, name: 'Дмитрий Кузнецов', email: 'dmitry@example.com', role: 'Гость' },
-          { id: 17, name: 'Алексей Сидоров', email: 'alex@example.com', role: 'Пользователь' },
-        ],
-        filteredUsers: []
+
+    // Варианты для выпадающего списка ролей
+    roleOptions: ['Админ', 'Модератор', 'Пользователь', 'Гость'],
+
+    // Конфигурация заголовков таблицы
+    headers: [
+      { text: 'ID', value: 'id' },       // Колонка ID
+      { text: 'Имя', value: 'name' },    // Колонка имени
+      { text: 'Email', value: 'email' }, // Колонка email
+      { text: 'Роль', value: 'role' }    // Колонка роли
+    ],
+
+    // Исходные данные таблицы
+    users: [
+      { id: 1, name: 'Иван Петров', email: 'ivan@example.com', role: 'Админ' },
+      { id: 2, name: 'Алексей Сидоров', email: 'alex@example.com', role: 'Пользователь' },
+      { id: 3, name: 'Мария Иванова', email: 'maria@example.com', role: 'Модератор' },
+      { id: 4, name: 'Елена Смирнова', email: 'elena@example.com', role: 'Пользователь' },
+      { id: 5, name: 'Дмитрий Кузнецов', email: 'dmitry@example.com', role: 'Гость' }
+    ]
   }),
 
-  created() {
-    this.filteredUsers = [...this.users];
-  },
-
-  methods: {
-    applyFilters() {
-      this.filteredUsers = this.users.filter(user => {
+  // Вычисляемые свойства
+  computed: {
+    /**
+     * Отфильтрованные данные таблицы
+     * Реактивно обновляется при изменении фильтров
+     */
+    filteredUsers() {
+      return this.users.filter(user => {
         return (
+          // Фильтр по имени (регистронезависимый)
           (this.filters.name === '' || 
            user.name.toLowerCase().includes(this.filters.name.toLowerCase())) &&
+          
+          // Фильтр по email (регистронезависимый)
           (this.filters.email === '' || 
            user.email.toLowerCase().includes(this.filters.email.toLowerCase())) &&
-          (!this.filters.role || 
-           user.role === this.filters.role)
+          
+          // Фильтр по роли (точное совпадение)
+          (!this.filters.role || user.role === this.filters.role)
         );
       });
+    }
+  },
+
+  // Методы приложения
+  methods: {
+    applyFilters() {
+      // Фильтрация работает через computed свойство
+    },
+    // Новый метод для сброса фильтра при нажатии на кнопку крестик по в поле фильтра
+    resetFilter(filterName) {
+      if (filterName === 'role') {
+        this.filters[filterName] = null;
+      } else {
+        this.filters[filterName] = '';
+      }
+      this.applyFilters();
     }
   }
 });
