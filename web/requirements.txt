@@ -1,0 +1,4 @@
+flask
+requests  # Только для web-сервера, но можно добавить везде для унификации
+psycopg2-binary  # Драйвер PostgreSQL для Python
+gunicorn==20.1.0

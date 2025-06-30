@@ -1,0 +1,47 @@
+services:
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - web-service
+  web-service:
+    build: ./web
+    env_file: .env  # <-- Используем общий .env файл
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+    ports:
+      - "5000:5000"  # Порт приложения
+      - "5678:5678"  # Порт для debugpy
+    volumes:
+      - ./web:/app123  # Монтируем код локально в контейнер
+      - ./web/templates:/app123/templates  # Или отдельно шаблоны
+    command: python -m debugpy --listen 0.0.0.0:5678 -m flask run --host=0.0.0.0 --port=5000 --reload
+    # --wait-for-client
+    depends_on:
+      - random-service
+      - db-service
+
+  random-service:
+    build: ./random
+    expose:
+      - "5001"  # Открываем порт только для других контейнеров
+
+  db-service:
+    image: postgres:13
+    env_file: .env  # <-- Тот же файл
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql  # Инициализация БД
+
+volumes:
+  postgres_data:
+

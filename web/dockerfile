@@ -1,0 +1,22 @@
+# Базовый образ с Python
+FROM my-python-base:1.0
+
+# Копируем код в контейнер для возможности горячей отладки
+WORKDIR /app123
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+#RUN pip install debugpy
+COPY . .
+
+# Устанавливаем зависимости (Flask)
+#RUN pip install flask
+# Разносим по слоям, чтобы mc не загружался каждый раз. Так не получилось, 
+# пришлось сделать собственный образ, и убрать в него же и debugpy
+#RUN apt-get update 
+#RUN apt-get install -y mc
+
+# Открываем порт 5000
+EXPOSE 5000
+
+# Команда для запуска
+CMD ["gunicorn", "--config", "gunicorn.conf.py", "app:app"]

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <!-- Базовые мета-теги -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Динамический заголовок страницы: блок title можно переопределить в дочерних шаблонах -->
+  <title>{% block title %}Мой Сайт{% endblock %}</title>
+  
+  <!-- Подключаем Bootstrap CSS для общих стилей -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Блок для дополнительных CSS-стилей (заполняется в дочерних шаблонах) -->
+  {% block styles %}{% endblock %}
+</head>
+<body>
+  <!-- Шапка сайта -->
+  <header class="bg-dark text-white p-3">
+    <div class="container">
+      <h1>Мой Flask-Сайт</h1>
+      
+      <!-- Навигационное меню -->
+      <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+          <ul class="navbar-nav me-auto">
+            <!-- Пункты меню. request.path проверяет текущий URL для подсветки активного пункта -->
+            <li class="nav-item">
+              <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Главная</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.path == '/vue' %}active{% endif %}" href="/vue">Vue-Таблица</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.path == '/about' %}active{% endif %}" href="/about">О нас</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Основное содержимое страницы -->
+  <main class="container mt-4">
+    {% block content %}
+      <!-- 
+        Блок content будет заменяться содержимым из дочерних шаблонов.
+        Если блок не переопределен, выведется содержимое по умолчанию (если есть).
+      -->
+    {% endblock %}
+  </main>
+
+  <!-- Подвал сайта -->
+  <footer class="bg-light text-center p-3 mt-5">
+    <div class="container">
+      <p>&copy; 2023 Мой Сайт. Все права защищены.</p>
+    </div>
+  </footer>
+
+  <!-- Подключаем Bootstrap JS (для работы dropdown-меню и других компонентов) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Блок для дополнительных скриптов (заполняется в дочерних шаблонах) -->
+  {% block scripts %}{% endblock %}
+</body>
+</html>
