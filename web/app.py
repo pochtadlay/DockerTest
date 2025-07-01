@@ -29,7 +29,7 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True  # принудительно обн�
 
 @app.route('/')
 def hello():
-    return "Привет из Docker-контейнера 777! 🐳 Йаааахуууууу7777!"
+    return render_template('main.html')
 
 @app.route('/vue')
 def vue_page():

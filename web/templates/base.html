@@ -1,66 +1,240 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- Базовые мета-теги -->
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- Динамический заголовок страницы: блок title можно переопределить в дочерних шаблонах -->
-  <title>{% block title %}Мой Сайт{% endblock %}</title>
-  
-  <!-- Подключаем Bootstrap CSS для общих стилей -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  
-  <!-- Блок для дополнительных CSS-стилей (заполняется в дочерних шаблонах) -->
-  {% block styles %}{% endblock %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 
+      ДИНАМИЧЕСКИЙ ЗАГОЛОВОК СТРАНИЦЫ
+      Будет заменен содержимым блока title в дочерних шаблонах.
+      По умолчанию: "Мой Flask-Сайт"
+    -->
+    <title>{% block title %}Мой Flask-Сайт{% endblock %}</title>
+
+    <!-- 
+      ПОДКЛЮЧЕНИЕ BOOTSTRAP 5
+      - CSS для базовой стилизации, сетки и компонентов
+      - Bootstrap Icons для векторных иконок
+    -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- 
+      ГЛОБАЛЬНЫЕ СТИЛИ САЙТА 
+      Важно: используем !important для защиты от переопределения Vuetify
+    -->
+    <style>
+        /* 
+          ФИКСИРОВАННАЯ ШАПКА 
+          Располагается вверху страницы, содержит заголовок и меню
+        */
+        .site-header {
+            background-color: #1e1e1e;        /* Темный фон шапки */
+            color: white;                     /* Белый текст */
+            position: fixed;                  /* Фиксированное позиционирование */
+            top: 0;                          /* Прижато к верху экрана */
+            left: 0;                         /* Прижато к левому краю */
+            right: 0;                        /* Прижато к правому краю */
+            z-index: 1000;                   /* Поверх других элементов */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); /* Тень для глубины */
+            padding: 15px 0;                 /* Внутренние отступы */
+        }
+        
+        /* 
+          КОНТЕЙНЕР ШАПКИ 
+          Центрирует содержимое и задает максимальную ширину
+        */
+        .header-container {
+            display: flex;               /* Гибкий контейнер, было указание  Максимальная ширина контента */
+            margin: 0 auto;                  /* Центрирование по горизонтали */
+            padding: 0 15px;                 /* Отступы по бокам */
+        }
+        
+        /* 
+          ЗАГОЛОВОК САЙТА 
+          Располагается вверху шапки слева
+        */
+        .site-title {
+            text-align: left;              /* Выравнивание слева */
+            margin-bottom: 0px;             /* Отступ снизу для меню */
+            font-size: 1.8rem;               /* Крупный размер шрифта */
+            font-weight: bold;               /* Жирное начертание */
+            padding-top: 5px;                /* Небольшой отступ сверху */
+        }
+        
+        /* 
+          НАВИГАЦИОННОЕ МЕНЮ 
+          Располагается ПОД заголовком, горизонтально по центру
+        */
+        .nav-menu {
+            display: flex;                   /* Гибкий контейнер */
+            justify-content: center;         /* Центрирование по горизонтали */
+            gap: 25px;                      /* Расстояние между пунктами */
+            flex-wrap: wrap;                 /* Перенос на маленьких экранах */
+        }
+        
+        /* 
+          СТИЛИ ДЛЯ ССЫЛОК МЕНЮ 
+        */
+        .nav-link {
+            color: white !important;         /* Белый цвет текста */
+            text-decoration: none !important; /* Убираем подчеркивание */
+            font-size: 1.1rem;               /* Размер шрифта */
+            padding: 8px 15px;               /* Внутренние отступы */
+            border-radius: 4px;              /* Скругленные углы */
+            transition: all 0.3s;            /* Плавные переходы */
+        }
+        
+        /* 
+          ЭФФЕКТ ПРИ НАВЕДЕНИИ НА ССЫЛКИ 
+        */
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1); /* Легкое подсвечивание */
+            transform: translateY(-2px);     /* Легкий подъем */
+        }
+        
+        /* 
+          СТИЛЬ ДЛЯ АКТИВНОЙ ССЫЛКИ 
+          Выделяет текущую страницу в меню
+        */
+        .nav-link.active {
+            background-color: rgba(255,255,255,0.2); /* Более яркое подсвечивание */
+            font-weight: bold;               /* Жирный шрифт */
+        }
+        
+        /* 
+          ОСНОВНОЙ КОНТЕНТ СТРАНИЦЫ 
+          Добавляем отступ сверху равный высоте шапки
+        */
+        main {
+            padding-top: 140px;              /* Защита от перекрытия шапкой */
+            min-height: calc(100vh - 200px); /* Минимальная высота (экран минус шапка и футер) */
+        }
+        
+        /* 
+          ПОДВАЛ САЙТА 
+          Располагается внизу страницы
+        */
+        footer {
+            background-color: #f8f9fa;       /* Светлый фон */
+            padding: 25px 0;                 /* Внутренние отступы */
+            text-align: center;              /* Выравнивание по центру */
+            margin-top: 40px;                /* Отступ от контента */
+            border-top: 1px solid #dee2e6;   /* Верхняя граница */
+            font-size: 0.9rem;               /* Размер шрифта */
+            color: #6c757d;                  /* Цвет текста */
+        }
+        
+        /* 
+          АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ 
+          Меняем расположение элементов на маленьких экранах
+        */
+        @media (max-width: 768px) {
+            .site-title {
+                font-size: 1.5rem;           /* Уменьшаем размер заголовка */
+                margin-bottom: 10px;         /* Уменьшаем отступ */
+            }
+            .nav-menu {
+                gap: 10px;                   /* Уменьшаем расстояние между пунктами */
+            }
+            .nav-link {
+                padding: 6px 10px;           /* Уменьшаем отступы */
+                font-size: 0.95rem;          /* Уменьшаем размер шрифта */
+            }
+            main {
+                padding-top: 100px;          /* Уменьшаем отступ сверху */
+            }
+        }
+    </style>
+
+    <!-- 
+      БЛОК ДЛЯ ДОПОЛНИТЕЛЬНЫХ СТИЛЕЙ
+      Будет заполнен в дочерних шаблонах (например, для подключения Vuetify)
+    -->
+    {% block styles %}{% endblock %}
 </head>
 <body>
-  <!-- Шапка сайта -->
-  <header class="bg-dark text-white p-3">
-    <div class="container">
-      <h1>Мой Flask-Сайт</h1>
-      
-      <!-- Навигационное меню -->
-      <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-          <ul class="navbar-nav me-auto">
-            <!-- Пункты меню. request.path проверяет текущий URL для подсветки активного пункта -->
-            <li class="nav-item">
-              <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Главная</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {% if request.path == '/vue' %}active{% endif %}" href="/vue">Vue-Таблица</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {% if request.path == '/about' %}active{% endif %}" href="/about">О нас</a>
-            </li>
-          </ul>
+    <!-- 
+      ШАПКА САЙТА 
+      Фиксированная область вверху страницы
+    -->
+    <header class="site-header">
+        <div class="header-container">
+            <!-- 
+              ЗАГОЛОВОК САЙТА 
+              Располагается вверху шапки по центру
+            -->
+            <div class="site-title">
+                <span>Мой Flask-Сайт</span>
+            
+            
+            <!-- 
+              НАВИГАЦИОННОЕ МЕНЮ 
+              Располагается ПОД заголовком, слева
+            -->
+            <nav class="nav-menu">
+                <!-- Пункт меню: Главная -->
+                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
+                    <i class="bi bi-house-door me-2"></i>Главная
+                </a>
+                
+                <!-- Пункт меню: О нас -->
+                <a class="nav-link {% if request.path == '/about' %}active{% endif %}" href="/about">
+                    <i class="bi bi-info-circle me-2"></i>О нас
+                </a>
+                
+                <!-- Пункт меню: Vue-Таблица -->
+                <a class="nav-link {% if request.path == '/vue' %}active{% endif %}" href="/vue">
+                    <i class="bi bi-table me-2"></i>Vue-Таблица
+                </a>
+            </nav>
         </div>
-      </nav>
-    </div>
-  </header>
+        </div>
+    </header>
 
-  <!-- Основное содержимое страницы -->
-  <main class="container mt-4">
-    {% block content %}
-      <!-- 
-        Блок content будет заменяться содержимым из дочерних шаблонов.
-        Если блок не переопределен, выведется содержимое по умолчанию (если есть).
-      -->
-    {% endblock %}
-  </main>
+    <!-- 
+      ОСНОВНОЙ КОНТЕНТ СТРАНИЦЫ 
+      Будет заменен содержимым блока content в дочерних шаблонах
+    -->
+    <main class="container">  <!-- Bootstrap-контейнер для адаптивных отступов -->
+        {% block content %}{% endblock %}
+    </main>
 
-  <!-- Подвал сайта -->
-  <footer class="bg-light text-center p-3 mt-5">
-    <div class="container">
-      <p>&copy; 2023 Мой Сайт. Все права защищены.</p>
-    </div>
-  </footer>
+    <!-- 
+      ПОДВАЛ САЙТА 
+      Отображается внизу всех страниц
+    -->
+    <footer>
+        <div class="container">
+            <p>
+                <i class="bi bi-code-slash"></i> С любовью создано на Flask 
+                <i class="bi bi-heart-fill text-danger mx-1"></i> 
+                &copy; {{ current_year }} Мой Flask-Сайт
+            </p>
+        </div>
+    </footer>
 
-  <!-- Подключаем Bootstrap JS (для работы dropdown-меню и других компонентов) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <!-- Блок для дополнительных скриптов (заполняется в дочерних шаблонах) -->
-  {% block scripts %}{% endblock %}
+    <!-- 
+      ПОДКЛЮЧЕНИЕ BOOTSTRAP JS 
+      Включает Popper.js для работы раскрывающихся элементов
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- 
+      БЛОК ДЛЯ ДОПОЛНИТЕЛЬНЫХ СКРИПТОВ
+      Будет заполнен в дочерних шаблонах (например, для Vue.js)
+    -->
+    {% block scripts %}{% endblock %}
+    
+    <!-- 
+      СКРИПТ ДЛЯ АВТОМАТИЧЕСКОГО ОБНОВЛЕНИЯ ГОДА В ПОДВАЛЕ 
+    -->
+    <script>
+        // Устанавливаем текущий год в подвале
+        document.querySelector('footer p').innerHTML = 
+            `<i class="bi bi-code-slash"></i> С любовью создано на Flask 
+            <i class="bi bi-heart-fill text-danger mx-1"></i> 
+            &copy; ${new Date().getFullYear()} Мой Flask-Сайт`;
+    </script>
 </body>
 </html>
