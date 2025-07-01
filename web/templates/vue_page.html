@@ -18,16 +18,25 @@
 
     <!-- Фиксим конфликты Vuetify и Bootstrap -->
     <style>
-      
-    /* Компенсируем отступ для фиксированной шапки */
-    #app {
-        padding-top: 20px !important;
-    }
-    /* Защищаем наши стили от Vuetify */
-    .site-header * {
-        font-size: 1rem !important;
-        line-height: normal !important;
-    }
+        /* Защищаем шапку от влияния Vuetify */
+        .v-content__wrap {
+            padding-top: 100px !important; /* Увеличено на 16px */
+        }
+        
+        /* Вариант 2: Добавляем отступ к контейнеру приложения */
+        .vue-container {
+            margin-top: 40px;
+        }
+        
+        /* Вариант 3: Фикс для Vuetify App */
+        #app {
+            padding-top: 64px; /* Высота header */
+        }
+        
+        /* Дополнительные стили */
+        .v-text-field {
+            margin-top: 20px; /* Отступ для полей ввода */
+        }
     </style>
 {% endblock %}
 <!-- 
@@ -45,7 +54,7 @@
   <!-- Обязательный компонент Vuetify (инициализирует стили) -->
   <v-app>
     <!-- Контейнер Vuetify с отступами -->
-    <v-container class="mt-8"> <!-- Добавляем отступ сверху -->
+    <v-container class="vue-container"> <!-- Добавляем отступ сверху -->
       <!-- Заголовок страницы -->
       <!-- text-h4 - стиль заголовка, mb-4 - отступ снизу 16px -->
       <h1 class="text-h4 mb-4">Таблица пользователей</h1>
